@@ -8,6 +8,13 @@
       "when": 1747457260526,
       "tag": "0000_thin_penance",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1747471316334,
+      "tag": "0001_woozy_tusk",
+      "breakpoints": true
     }
   ]
 }

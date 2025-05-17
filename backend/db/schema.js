@@ -7,8 +7,8 @@ const productsTable = pgTable('products', {
   img: varchar(),
   price: integer().notNull(),
   status: char(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at'),
 })
 
 module.exports = { productsTable }
