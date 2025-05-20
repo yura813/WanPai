@@ -1,6 +1,8 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+// import ProductDetailPage from './components/ProductDetailPage.vue'
+
 </script>
 
 <template>
@@ -14,6 +16,8 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         <RouterLink to="/admin">後台首頁</RouterLink>
+        <RouterLink to="/productdetailpage">product</RouterLink>
+
       </nav>
     </div>
   </header>
