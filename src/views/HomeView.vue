@@ -1,9 +1,7 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue';
+import OrderManager from '@/components/OrderManager.vue'
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <OrderManager />
 </template>
