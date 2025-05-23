@@ -1,122 +1,161 @@
 <template>
-  <div class="p-6 space-y-6">
-    <!-- 搜尋 + 篩選 -->
-    <div class="flex flex-col md:flex-row gap-4">
-      <input
-        type="text"
-        placeholder="搜尋訂單..."
-        class="input input-bordered w-full md:w-1/3"
-        v-model="searchText"
+  <div class="p-6 bg-white rounded-xl shadow space-y-6">
+    <!-- 篩選列 -->
+    <div class="flex flex-wrap gap-4">
+      <InputText v-model="searchText" placeholder="搜尋訂單" class="w-full md:w-1/3" />
+
+      <Dropdown
+        v-model="statusFilter"
+        :options="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="訂單狀態"
+        class="w-full md:w-1/4"
+        panelClass="surface-overlay border-round shadow-2 p-2"
       />
 
-      <select class="select select-bordered w-full md:w-1/4" v-model="statusFilter">
-        <option value="">全部狀態</option>
-        <option>待出貨</option>
-        <option>已出貨</option>
-        <option>已完成</option>
-        <option>退貨</option>
-      </select>
-
-      <select class="select select-bordered w-full md:w-1/4" v-model="timeFilter">
-        <option value="">全部時間</option>
-        <option>一週內</option>
-        <option>一個月內</option>
-        <option>三個月內</option>
-      </select>
+      <Dropdown
+        v-model="timeFilter"
+        :options="timeOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="全部時間"
+        class="w-full md:w-1/4"
+        panelClass="surface-overlay border-round shadow-2 p-2"
+      />
     </div>
 
-    <!-- 訂單表格 -->
-    <div class="overflow-x-auto">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th>商品訊息</th>
-            <th>售價</th>
-            <th>數量</th>
-            <th>訂單總額</th>
-            <th>交易狀態</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in filteredOrders" :key="order.id">
-            <td>
-              <div class="flex items-center gap-4">
-                <img :src="order.image" alt="商品圖" class="w-16 h-16 object-cover rounded" />
-                <div>
-                  <p class="font-semibold">{{ order.name }}</p>
-                  <p class="text-sm text-gray-500">編號：{{ order.code }}</p>
-                  <p class="text-sm text-gray-500">顏色：{{ order.color }}｜尺寸：{{ order.size }}</p>
-                </div>
-              </div>
-            </td>
-            <td>${{ order.price }}</td>
-            <td>{{ order.quantity }}</td>
-            <td>${{ order.price * order.quantity }}</td>
-            <td>
-              <span
-                class="badge"
-                :class="{
-                  'badge-success': order.status === '已完成',
-                  'badge-warning': order.status === '已出貨',
-                  'badge-error': order.status === '退貨'
-                }"
-              >
-                {{ order.status }}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline">查看</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- 商品資訊標題列（獨立） -->
+    <div class="bg-gray-100 px-4 text-sm font-semibold grid grid-cols-7 gap-4">
+      <div></div>
+      <div class="col-span-2">商品資訊</div>
+      <div>售價</div>
+      <div>數量</div>
+      <div>訂單總額</div>
+      <div>交易狀態</div>
+    </div>
+
+    <!-- 訂單列表 -->
+    <div v-if="paginatedOrders.length" class="space-y-6">
+      <div v-for="order in paginatedOrders" :key="order.id" class="border rounded-lg">
+        <!-- 訂單資訊列 -->
+        <div class="bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 grid grid-cols-2">
+          <div>訂單編號：{{ order.orderId }}</div>
+          <div class="text-right">購買日期：{{ order.orderDate }}</div>
+        </div>
+
+        <!-- 單筆訂單商品內容 -->
+        <div class="grid grid-cols-7 gap-4 items-center px-4 py-3">
+          <img :src="order.items[0].image" class="w-16 h-16 rounded object-cover" alt="商品圖片" />
+
+          <div class="col-span-2">
+            <p class="font-medium">{{ order.items[0].name }}</p>
+            <p class="text-sm text-gray-500">{{ order.items[0].code }}</p>
+          </div>
+
+          <div>${{ order.items[0].price }}</div>
+          <div>{{ order.items[0].quantity }}</div>
+          <div class="font-semibold">NT${{ order.totalAmount }}</div>
+
+          <div class="space-y-1">
+            <span :class="['inline-block px-2 py-1 rounded-full text-xs font-semibold', statusClass(order.status)]">
+              {{ order.status }}
+            </span>
+            <div>
+              <RouterLink :to="`/order/${order.id}`" class="text-blue-600 hover:underline text-sm block">
+                訂單詳情
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else class="text-center text-gray-400 p-6">目前沒有符合的訂單資料</div>
+
+    <!-- 分頁控制 -->
+    <div class="flex justify-center gap-2 mt-4">
+      <button @click="prevPage" class="btn btn-sm" :disabled="currentPage === 1">上一頁</button>
+      <span class="text-sm text-gray-600">第 {{ currentPage }} 頁</span>
+      <button @click="nextPage" class="btn btn-sm" :disabled="currentPage === totalPages">下一頁</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
 
-const searchText = ref('')
-const statusFilter = ref('')
-const timeFilter = ref('')
+const searchText = ref('');
+const statusFilter = ref('');
+const timeFilter = ref('');
+const currentPage = ref(1);
+const itemsPerPage = 5;
 
-// 假資料
+const statusOptions = [
+  { label: '訂單狀態', value: '' },
+  { label: '待出貨', value: '待出貨' },
+  { label: '已出貨', value: '已出貨' },
+  { label: '已完成', value: '已完成' },
+  { label: '退貨', value: '退貨' },
+];
+
+const timeOptions = [
+  { label: '全部時間', value: '' },
+  { label: '一週內', value: '一週內' },
+  { label: '一個月內', value: '一個月內' },
+];
+
 const orders = ref([
   {
     id: 1,
-    image: 'https://via.placeholder.com/60',
-    name: '魯夫模型',
-    code: 'A12345',
-    color: '黑',
-    size: 'M',
-    price: 800,
-    quantity: 2,
+    orderId: 'ORD123456',
+    orderDate: '2025-05-20',
     status: '已完成',
-    createdAt: '2025-05-19'
+    totalAmount: 2200,
+    items: [
+      {
+        productId: 'P001',
+        image: 'https://placekitten.com/60/60',
+        name: '吉伊卡哇-烏薩奇',
+        code: 'A12345',
+        price: 1680,
+        quantity: 1,
+      },
+    ],
   },
-  {
-    id: 2,
-    image: 'https://via.placeholder.com/60',
-    name: '吉伊卡哇-吉伊',
-    code: 'B67890',
-    color: '',
-    size: 'L',
-    price: 1200,
-    quantity: 1,
-    status: '已出貨',
-    createdAt: '2025-05-13'
-  }
-])
+]);
 
 const filteredOrders = computed(() => {
-  return orders.value.filter(order => {
-    const matchSearch = order.name.includes(searchText.value) || order.code.includes(searchText.value)
-    const matchStatus = !statusFilter.value || order.status === statusFilter.value
-    // 這邊時間篩選先略過邏輯，你之後可以加上日期運算
-    const matchTime = true
-    return matchSearch && matchStatus && matchTime
-  })
-})
+  return orders.value.filter((order) => {
+    const matchSearch =
+      !searchText.value ||
+      (order.orderId?.includes(searchText.value) ||
+        order.items?.some((item) => item.name?.includes(searchText.value)));
+    const matchStatus = !statusFilter.value || order.status === statusFilter.value;
+    return matchSearch && matchStatus;
+  });
+});
+
+const totalPages = computed(() => Math.ceil(filteredOrders.value.length / itemsPerPage));
+const paginatedOrders = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  return filteredOrders.value.slice(start, start + itemsPerPage);
+});
+
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--;
+}
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++;
+}
+function statusClass(status) {
+  return {
+    '已完成': 'bg-green-100 text-green-700',
+    '待出貨': 'bg-yellow-100 text-yellow-700',
+    '已出貨': 'bg-blue-100 text-blue-700',
+    '退貨': 'bg-red-100 text-red-700',
+  }[status] || 'bg-gray-100 text-gray-600';
+}
 </script>

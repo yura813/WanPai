@@ -1,5 +1,5 @@
 <script setup>
-import OrderManager from '@/components/OrderManager.vue'
+import OrderManager from '@/components/OrderManager.vue';
 </script>
 
 <template>
