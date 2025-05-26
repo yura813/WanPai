@@ -47,7 +47,7 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  console.log('📩 收到登入請求');
+  console.log('收到登入請求');
   const { email, password } = req.body;
 
   if (!email || !password) {
