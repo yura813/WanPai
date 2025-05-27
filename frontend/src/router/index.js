@@ -48,22 +48,21 @@ const router = createRouter({
       component: ProductDetailPage,
     },
 
-   {
-     path: '/orders',
-     name: 'OrderManager',
-     component: () => import('../views/OrderManager.vue')
-   },
-   {
-     path: '/orders/:id',
-     name: 'OrderDetail',
-     component: () => import('../views/OrderDetail.vue')
-   },
-
-   {
-     path: '/productdetailpage',
-     name: 'productdetailpage',
-     component: ProductDetailPage,
-   }
+        {
+          path: '/orders',
+          name: 'OrderManager',
+          component: () => import('../views/OrderManager.vue')
+        },
+        {
+          path: '/orders/:id',
+          name: 'OrderDetail',
+          component: () => import('../views/OrderDetail.vue')
+        },
+        {
+          path: '/productdetailpage',
+          name: 'productdetailpage',
+          component: ProductDetailPage,
+        }
   ],
 })
 
