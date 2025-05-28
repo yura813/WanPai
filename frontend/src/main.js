@@ -7,8 +7,9 @@ import 'primeicons/primeicons.css'
 import Aura from '@primeuix/themes/aura'
 
 
-const app = createApp(App);
 
+
+const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
