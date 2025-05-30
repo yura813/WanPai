@@ -77,7 +77,6 @@ import { ref } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import { useRouter } from 'vue-router'
 import { computed } from 'vue'
 
 const filteredOrders = computed(() => {
@@ -105,16 +104,12 @@ const filteredOrders = computed(() => {
 const searchOrderId = ref('')
 const selectedDateRange = ref('')
 
-const onFilter = () => {
-  console.log('篩選條件：', {
-    訂單編號: searchOrderId.value,
-    日期範圍: selectedDateRange.value,
-  })
+const goToDetail = (id) => {
+  // TODO: implement detail view routing
 }
 
 
-// 引入路由
-const router = useRouter()
+
 
 // 資料
 const expandedRows = ref([])
